@@ -1,1 +1,0 @@
-# some_code_with_graphql
