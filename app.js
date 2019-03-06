@@ -1,5 +1,6 @@
 const app = require('express')();
 const graphqlHTTP = require('express-graphql');
+const mongoose = require('mongoose');
 
 const graphqlSchema = require('./graphql/schema');
 const graphqlResolver = require('./graphql/resolver');
@@ -11,5 +12,9 @@ app.use('/graphql',graphqlHTTP({
 }));
 
 app.listen(3000,()=>{
-  console.log('Runing...');
+  mongoose.connect('mongodb://localhost/learning', { useNewUrlParser: true }).then((some)=>{
+    console.log('MongoDB and Server is runing...');
+  }).catch(err=>{
+    console.log(err);
+  });
 });
