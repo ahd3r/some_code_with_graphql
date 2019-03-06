@@ -23,39 +23,28 @@ module.exports = {
     return {stuff,count}
   },
   takeOnePost:async (args,req)=>{
-    const id = args.post_id;
-    const post = await postSchema.findById(id).populate('creator');
+    const time = await postSchema.findById(args.post_id);
+    await postSchema.findByIdAndUpdate(args.post_id,{views: time.views+1});
+    const post = await postSchema.findById(args.post_id).populate('creator');
     return post
   },
   takeAllUsers:async (args,req)=>{
     const page = parseInt(args.page);
     const amount = parseInt(args.amount);
-    const users = await userSchema.find().sort({'_id': -1}).skip((page-1)*amount).limit(amount);
-    const resUser = [];
-    for(let i=0; i<users.length; i++){
-      let res = {};
-      res._id = users[i]._id;
-      res.name = users[i].name;
-      res.created = users[i].created;
-      res.age = users[i].age;
-      res.married = users[i].married;
-      res.posts = await postSchema.find({ creator:users[i]._id });
-      if(res.posts.length===0){
-        delete res.posts;
-      }
-      resUser.push(res);
+    const stuff = await userSchema.find().sort({'_id': -1}).skip((page-1)*amount).limit(amount);
+    for(let i=0; i<stuff.length; i++){
+      stuff[i].posts = await postSchema.find({ creator:stuff[i]._id });
     }
     const count = await userSchema.countDocuments();
-    return {stuff:resUser,count}
+    return {stuff,count}
   },
   takeOneUser:async (args,req)=>{
-    const id = args.user_id;
-    const user = await userSchema.findById(id).populate('creator');
+    const user = await userSchema.findById(args.user_id).populate('creator');
     return user
   },
   // mutation
   addPost:async (args,req)=>{
-    if(validation.isEmpty(args.dataPost.creator)){
+    if(!args.dataPost.creator){
       throw new Error('Need creator of post');
     }
     const userId = new mongoose.mongo.ObjectId(args.dataPost.creator);
